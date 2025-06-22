@@ -28,6 +28,7 @@ enum Test
 struct TaggedUnion @TaggedUnion
 {
 	char tag @Tag;
+	// NOTE: currently this doesn't work due to a bug, it will need to be a separate union type eg: 'MyUnion vals @Union'
 	union vals @Union
 	{
 		int foo;
