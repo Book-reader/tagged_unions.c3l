@@ -3,18 +3,20 @@
 ## api:
 ```cpp
 // returns a new tagged union of type $Type with a tag of #tag and a value of #val. #tag must be the name of the union member converted to uppercase.
-tu::init($Type, #tag, #val)
+tu::init($Type, #tag, #val);
 // sets the tagged union #var to tag #tag and value #new_val.
-tu::set(#var, #tag, #new_val)
+tu::set(#var, #tag, #new_val);
 // returns the currently used tag by tagged union #var.
-tu::tag(#var)
+tu::tag(#var);
 // returns the compile-time constant index of #tag from tagged union type $Type. this is meant to be compared to tu::tag(#var) in a switch or if statement
-tu::@id($Type, #tag)
+tu::@id($Type, #tag);
 // returns the value of #var assumming that its current value is of tag #tag, will panic in safe mode if this is not true
-tu::get(#var, #tag)
+tu::get(#var, #tag);
 ```
 
 to create a tagged union, create a struct annotated with `@TaggedUnion`, then place in it an integer or enum annotated with `@Tag` and a union annotated with `@Union`
+
+getting and setting the the tagged union use `tu::get(union, TAG)` and `tu::set(union, TAG, val)`, where the second parameter is the name of the union value in uppercase
 
 ## example usage:
 ```cpp
