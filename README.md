@@ -2,11 +2,16 @@
 
 ## api:
 ```c3
-@taginit(#var, #tag, #val) // returns a new tagged union the same type as #var with a tag of #tag and a value of #val.
-@tagset(#var, #tag, #new_val) // sets the tagged union #var to tag #tag and value #new_val.
-@tagof(#var) // returns the currently used tag by tagged union #var.
-@tagid(#var, #tag) // returns the compile-time constant index of #tag from tagged union #var. this is meant to be compared to @tagof(#var) in a switch or if statement
-@tagget(#var, #tag) // returns the value of #var assumming that it has the tag #tag, will panic in safe mode if this is not true
+// returns a new tagged union the same type as #var with a tag of #tag and a value of #val.
+@taginit(#var, #tag, #val)
+// sets the tagged union #var to tag #tag and value #new_val.
+@tagset(#var, #tag, #new_val)
+// returns the currently used tag by tagged union #var.
+@tagof(#var)
+// returns the compile-time constant index of #tag from tagged union #var. this is meant to be compared to @tagof(#var) in a switch or if statement
+@tagid(#var, #tag)
+// returns the value of #var assumming that it has the tag #tag, will panic in safe mode if this is not true
+@tagget(#var, #tag)
 ```
 
 ## example usage:
