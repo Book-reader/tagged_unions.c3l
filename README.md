@@ -14,6 +14,8 @@ tu::@id($Type, #tag)
 tu::get(#var, #tag)
 ```
 
+to create a tagged union, create a struct annotated with `@TaggedUnion`, then place in it an integer or enum annotated with `@Tag` and a union annotated with `@Union`
+
 ## example usage:
 ```cpp
 import tagged_unions;
