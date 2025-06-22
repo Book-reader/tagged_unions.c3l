@@ -21,9 +21,7 @@ macro init($Type, #tag, #val) @safemacro
 *>
 macro set(#var, #tag, #new_val) @safemacro
 {
-	// TODO: use this once it's fixed
-	// @get_tag_member(#var).get(#var) = @get_tagged_union_idx(#var, #tag);
-	#var.$eval(@get_tag_member($typeof(#var)).nameof) = @get_tagged_union_member_id($typeof(#var), #tag);
+	*&@get_tag_member($typeof(#var)).get(#var) = @get_tagged_union_member_id($typeof(#var), #tag);
 	@get_union_member($typeof(#var)).get(#var).$eval(@str_lower($stringify(#tag))) = #new_val;
 }
 
