@@ -1,49 +1,49 @@
-module tagged_unions;
+module tagged_unions::tu;
 
 attrdef @TaggedUnion = @tag("is_tagged_union", true);
 attrdef @Tag = @tag("is_tag", true);
 attrdef @Union = @tag("is_union", true);
 
 <*
- @require @is_tagged_union($typeof(#var)) : "@tagset must be used on a tagged union"
- @require @has_tagged_union_member(#var, #tag) : "#tag must be a valid tagged union member"
+ @require @is_tagged_union($Type) : "init must be used on a tagged union type"
+ @require @has_tagged_union_member($Type, #tag) : "#tag must be a valid tagged union member"
 *>
-macro @taginit(#var, #tag, #val) @builtin
+macro init($Type, #tag, #val) @safemacro
 {
-	$typeof(#var) new;
-	@tagset(new, #tag, #val);
+	$Type new;
+	set(new, #tag, #val);
 	return new;
 }
 
 <*
- @require @is_tagged_union($typeof(#var)) : "@tagset must be used on a tagged union"
- @require @has_tagged_union_member(#var, #tag) : "#tag must be a valid tagged union member"
+ @require @is_tagged_union($typeof(#var)) : "set must be used on a tagged union"
+ @require @has_tagged_union_member($typeof(#var), #tag) : "#tag must be a valid tagged union member"
 *>
-macro @tagset(#var, #tag, #new_val) @builtin
+macro set(#var, #tag, #new_val) @safemacro
 {
 	// TODO: use this once it's fixed
 	// @get_tag_member(#var).get(#var) = @get_tagged_union_idx(#var, #tag);
-	#var.$eval(@get_tag_member(#var).nameof) = @get_tagged_union_member_id(#var, #tag);
-	@get_union_member(#var).get(#var).$eval(@str_lower($stringify(#tag))) = #new_val;
+	#var.$eval(@get_tag_member($typeof(#var)).nameof) = @get_tagged_union_member_id($typeof(#var), #tag);
+	@get_union_member($typeof(#var)).get(#var).$eval(@str_lower($stringify(#tag))) = #new_val;
 }
 
 <*
- @require @is_tagged_union($typeof(#var)) : "@tagof must be used on a tagged union"
+ @require @is_tagged_union($typeof(#var)) : "tag must be used on a tagged union"
 *>
-macro @tagof(#var) @builtin => @get_tag_member(#var).get(#var);
+macro tag(#var) @safemacro => @get_tag_member($typeof(#var)).get(#var);
 
 <*
- @require @is_tagged_union($typeof(#var)) : "@tagid must be used on a tagged union"
- @require @has_tagged_union_member(#var, #tag) : "#tag must be a valid tagged union member"
+ @require @is_tagged_union($Type) : "@id must be used on a tagged union"
+ @require @has_tagged_union_member($Type, #tag) : "#tag must be a valid tagged union member"
 *>
-macro @tagid(#var, #tag) @builtin @const => @get_tagged_union_member_id(#var, #tag);
+macro @id($Type, #tag) @const => @get_tagged_union_member_id($Type, #tag);
 
 <*
- @require @is_tagged_union($typeof(#var)) : "@tagget must be used on a tagged union"
- @require @has_tagged_union_member(#var, #tag) : "#tag must be a valid tagged union member"
- @require #var.$eval(@get_tag_member(#var).nameof) == @get_tagged_union_member_id(#var, #tag) : "tried to get the value of the incorrect tag"
+ @require @is_tagged_union($typeof(#var)) : "get must be used on a tagged union"
+ @require @has_tagged_union_member($typeof(#var), #tag) : "#tag must be a valid tagged union member"
+ @require #var.$eval(@get_tag_member($typeof(#var)).nameof) == @get_tagged_union_member_id($typeof(#var), #tag) : "tried to get the value of the incorrect tag"
 *>
-macro @tagget(#var, #tag) @builtin => @get_union_member(#var).get(#var).$eval(@str_lower($stringify(#tag)));
+macro get(#var, #tag) @safemacro => @get_union_member($typeof(#var)).get(#var).$eval(@str_lower($stringify(#tag)));
 
 macro bool @is_tagged_union($Type) @private
 {
@@ -68,38 +68,38 @@ macro bool @is_tagged_union($Type) @private
 	return $has_tag &&& $has_union;
 }
 
-macro @get_tag_member(#val) @const @private
+macro @get_tag_member($Type) @const @private
 {
-	$foreach $member : $typeof(#val).membersof:
+	$foreach $member : $Type.membersof:
 		$if $member.has_tagof("is_tag"): return $member; $endif
 	$endforeach
 }
 
 
-macro @get_union_member(#val) @const @private
+macro @get_union_member($Type) @const @private
 {
-	$foreach $member : $typeof(#val).membersof:
+	$foreach $member : $Type.membersof:
 		$if $member.has_tagof("is_union"): return $member; $endif
 	$endforeach
 }
 
-macro @get_tagged_union_member_id(#val, #tag_name) @const @private
+macro @get_tagged_union_member_id($Type, #tag_name) @const @private
 {
-	$foreach $i, $member : @get_union_member(#val).membersof:
+	$foreach $i, $member : @get_union_member($Type).membersof:
 		$if $member.nameof == @str_lower($stringify(#tag_name)):
-			$if @get_tag_member(#val).kindof == ENUM:
-				return $typefrom(@get_tag_member(#val).typeid).from_ordinal($i);
+			$if @get_tag_member($Type).kindof == ENUM:
+				return $typefrom(@get_tag_member($Type).typeid).from_ordinal($i);
 			$else
-				return ($typefrom(@get_tag_member(#val).typeid))$i;
+				return ($typefrom(@get_tag_member($Type).typeid))$i;
 			$endif
 		$endif
 	$endforeach
 	unreachable("this cannot happen");
 }
 
-macro bool @has_tagged_union_member(#val, #tag_name) @const @private
+macro bool @has_tagged_union_member($Type, #tag_name) @const @private
 {
-	$foreach $i, $member : @get_union_member(#val).membersof:
+	$foreach $i, $member : @get_union_member($Type).membersof:
 		$if $member.nameof == @str_lower($stringify(#tag_name)):
 			return true;
 		$endif

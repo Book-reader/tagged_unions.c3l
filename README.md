@@ -2,16 +2,16 @@
 
 ## api:
 ```c3
-// returns a new tagged union the same type as #var with a tag of #tag and a value of #val.
-@taginit(#var, #tag, #val)
+// returns a new tagged union of type $Type with a tag of #tag and a value of #val.
+tu::init($Type, #tag, #val)
 // sets the tagged union #var to tag #tag and value #new_val.
-@tagset(#var, #tag, #new_val)
+tu::set(#var, #tag, #new_val)
 // returns the currently used tag by tagged union #var.
-@tagof(#var)
-// returns the compile-time constant index of #tag from tagged union #var. this is meant to be compared to @tagof(#var) in a switch or if statement
-@tagid(#var, #tag)
+tu::tag(#var)
+// returns the compile-time constant index of #tag from tagged union type $Type. this is meant to be compared to tu::tag(#var) in a switch or if statement
+tu::@id($Type, #tag)
 // returns the value of #var assumming that it has the tag #tag, will panic in safe mode if this is not true
-@tagget(#var, #tag)
+tu::get(#var, #tag)
 ```
 
 ## example usage:
@@ -40,27 +40,27 @@ struct TaggedUnion @TaggedUnion
 
 fn int main(String[] args)
 {
-	TaggedUnion x = @taginit(x, FOO, 123);
-	switch (@tagof(x))
+	TaggedUnion x = tu::init(TaggedUnion, FOO, 123);
+	switch (tu::tag(x))
 	{
-		case @tagid(x, FOO):
-			io::printfn("was foo: %s", @tagget(x, FOO));
+		case tu::@id(TaggedUnion, FOO):
+			io::printfn("was foo: %s", tu::get(x, FOO));
 		default:
 			io::printn("wasn't foo");
 	}
 
-	@tagset(x, BAR, "hello");
-	if (@tagof(x) == @tagid(x, FOO))
+	tu::set(x, BAR, "hello");
+	if (tu::tag(x) == tu::@id(TaggedUnion, FOO))
 	{
-		io::printfn("was foo with val '%s'", @tagget(x, FOO));
+		io::printfn("was foo with val '%s'", tu::get(x, FOO));
 	}
-	else if (@tagof(x) == @tagid(x, BAR))
+	else if (tu::tag(x) == tu::@id(TaggedUnion, BAR))
 	{
-		io::printfn("was bar with val '%s'", @tagget(x, BAR));
+		io::printfn("was bar with val '%s'", tu::get(x, BAR));
 	}
 
-	@tagset(x, ENUM_TEST, VAL_A);
-	assert(@tagget(x, ENUM_TEST) == Test.VAL_A);
+	tu::set(x, ENUM_TEST, VAL_A);
+	assert(tu::get(x, ENUM_TEST) == Test.VAL_A);
 	return 0;
 }
 ```
