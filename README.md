@@ -86,7 +86,7 @@ fn int main(String[] args)
 
 	switch (tu::tag(tok))
 	{
-		case tu::@id(Token, INVALID): // for enums the enum or @id can be used, for integer types @id *must* be used
+		case tu::@id(Token, INVALID): // for enum tags the enum or @id can be used, for integer types @id *must* be used
 		case LPAREN:
 		case RPAREN:
 		case PLUS:
