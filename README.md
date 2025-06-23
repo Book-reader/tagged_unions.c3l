@@ -2,13 +2,13 @@
 
 ## api:
 ```cpp
-// returns a new tagged union of type $Type with a tag of #tag and a value of #val. #tag must be the name of the union member converted to uppercase.
+// returns a new tagged union of type $Type with a tag of #tag and a value of #val. #tag must be the name of the union member converted to uppercase or a name specified by `@TagIs`.
 tu::init($Type, #tag, #val);
 // sets the tagged union #var to tag #tag and value #new_val.
 tu::set(#var, #tag, #new_val);
 // returns the currently used tag by tagged union #var.
 tu::tag(#var);
-// returns the compile-time constant index of #tag from tagged union type $Type. this is meant to be compared to tu::tag(#var) in a switch or if statement
+// returns the compile-time constant index of #tag from tagged union type $Type. this is meant to be compared to tu::tag(#var) in a switch or if statement. not needed for tagged unions with enum tags
 tu::@id($Type, #tag);
 // returns the value of #var assumming that its current value is of tag #tag, will panic in safe mode if this is not true
 tu::get(#var, #tag);
@@ -18,44 +18,72 @@ to create a tagged union, create a struct annotated with `@TaggedUnion`, then pl
 
 getting and setting the the tagged union use `tu::get(union, TAG)` and `tu::set(union, TAG, val)`, where the second parameter is the name of the union value in uppercase
 
+`@TagIs({"NAME1", "NAME2"})` can be added to any union member to change tag used to refer to it or allow multiple tags to refer to it
+
 ## example usage:
 ```cpp
 import tagged_unions;
+
 import std::io;
 
-struct TaggedUnion @TaggedUnion
+enum TokenType : char
 {
-	char tag @Tag;
-	// NOTE: currently this doesn't work due to a bug, it will need to be a separate union type eg: 'MyUnion vals @Union'
-	union vals @Union
-	{
-		int foo;
-		String bar;
-	}
-	// extra values are allowed
-	int always_existing_val;
+	INVALID,
+	LPAREN,
+	RPAREN,
+	PLUS,
+	MINUS,
+	NUMBER,
+	IDENT,
+}
+
+// Should be possible to inline in the struct soon
+union __Token
+{
+	double number;
+	String id @TagIs({"IDENT"});
+}
+
+struct Token @TaggedUnion
+{
+	__Token val @Union;
+	TokenType type @Tag;
 }
 
 fn int main(String[] args)
 {
-	// tu::init is optional
-	TaggedUnion x = tu::init(TaggedUnion, FOO, 123);
-	switch (tu::tag(x))
+	Token tok = tu::init(Token, INVALID);
+
+	if (args.len > 1) switch (args[1])
 	{
-		case tu::@id(TaggedUnion, FOO):
-			io::printfn("was foo with value '%s'", tu::get(x, FOO));
+		case "(": tu::set(tok, LPAREN);
+		case ")": tu::set(tok, RPAREN);
+		case "+": tu::set(tok, PLUS);
+		case "-": tu::set(tok, MINUS);
 		default:
-			io::printn("wasn't foo");
+			if (try num = args[1].to_double())
+			{
+				tu::set(tok, NUMBER, num);
+			}
+			else
+			{
+				tu::set(tok, IDENT, args[1]);
+			}
 	}
 
-	tu::set(x, BAR, "hello");
-	if (tu::tag(x) == tu::@id(TaggedUnion, BAR))
+	switch (tu::tag(tok))
 	{
-		io::printfn("was bar with val '%s'", tu::get(x, BAR));
+		case tu::@id(Token, INVALID): // for enums the enum or @id can be used, for integer types @id *must* be used
+		case LPAREN:
+		case RPAREN:
+		case PLUS:
+		case MINUS:
+			io::printfn("token was %s", tu::tag(tok));
+		case NUMBER:
+			io::printfn("got number '%s'", tu::get(tok, NUMBER));
+		case IDENT:
+			io::printfn("got ident '%s'", tu::get(tok, IDENT));
 	}
-
-	// this will cause a panic at runtime in safe mode (opt level -O1 and below, or with --safe=yes)
-	tu::get(x, FOO);
 	return 0;
 }
 ```

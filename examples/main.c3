@@ -2,23 +2,89 @@ module main;
 import tagged_unions;
 
 import std::io;
+
+enum TokenType : char
+{
+	INVALID,
+	LPAREN,
+	RPAREN,
+	PLUS,
+	MINUS,
+	NUMBER,
+	IDENT,
+}
+
+// Should be possible to inline in the struct soon
+union __Token
+{
+	double number;
+	String id @TagIs({"IDENT"});
+}
+
+struct Token @TaggedUnion
+{
+	__Token val @Union;
+	TokenType type @Tag;
+}
+
+fn int main(String[] args)
+{
+	Token tok = tu::init(Token, INVALID);
+
+	if (args.len > 1) switch (args[1])
+	{
+		case "(": tu::set(tok, LPAREN);
+		case ")": tu::set(tok, RPAREN);
+		case "+": tu::set(tok, PLUS);
+		case "-": tu::set(tok, MINUS);
+		default:
+			if (try num = args[1].to_double())
+			{
+				tu::set(tok, NUMBER, num);
+			}
+			else
+			{
+				tu::set(tok, IDENT, args[1]);
+			}
+	}
+
+	switch (tu::tag(tok))
+	{
+		case tu::@id(Token, INVALID): // for enums the enum or @id can be used, for integer types @id *must* be used
+		case LPAREN:
+		case RPAREN:
+		case PLUS:
+		case MINUS:
+			io::printfn("token was %s", tu::tag(tok));
+		case NUMBER:
+			io::printfn("got number '%s'", tu::get(tok, NUMBER));
+		case IDENT:
+			io::printfn("got ident '%s'", tu::get(tok, IDENT));
+	}
+	return 0;
+}
+
+/*
+import std::io;
 enum Test
 {
+	FOO,
 	VAL_A,
 	VAL_B,
 	VAL_C,
 }
-
+typedef Aa = Test;
 union __Temp
 {
-	int foo;
-	String bar;
+	int foo @TagIs({"FOO", "BAR"}); // @id(FOO) != @id(BAR)
+	String bar @TagIs({"FOO1"});
 	Test enum_test;
 
 }
 struct TaggedUnion @TaggedUnion
 {
-	Test tag @Tag;
+	// Test tag @Tag;
+	char tag @Tag;
 	__Temp a @Union;
 	// Doesn't work yet because of a bug
 	/*union a @Union
@@ -31,19 +97,21 @@ struct TaggedUnion @TaggedUnion
 
 fn int main(String[] args)
 {
-	TaggedUnion x = tu::init(TaggedUnion, FOO, 123);
+	TaggedUnion x = tu::init(TaggedUnion, FOO1, "hello");
+//	tu::set(x, FOO1, "hello");
+	io::printfn("%s %s", x.tag, x.a.bar);
 	switch (tu::tag(x))
 	{
-		case tu::@id(TaggedUnion, FOO):
-			io::printfn("was foo: %s", tu::get(x, FOO));
+		case tu::@id(TaggedUnion, FOO1):
+			io::printfn("was foo: %s", tu::get(x, FOO1));
 		default:
 			io::printn("wasn't foo");
 	}
 
-	tu::set(x, BAR, "hello");
-	if (tu::tag(x) == tu::@id(TaggedUnion, FOO))
+	tu::set(x, BAR, 123);
+	if (tu::tag(x) == tu::@id(TaggedUnion, FOO1))
 	{
-		io::printfn("was foo with val '%s'", tu::get(x, FOO));
+		io::printfn("was foo with val '%s'", tu::get(x, FOO1));
 	}
 	else if (tu::tag(x) == tu::@id(TaggedUnion, BAR))
 	{
