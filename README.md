@@ -64,7 +64,7 @@ struct Token @TaggedUnion
 fn int main(String[] args)
 {
 	Token tok = tu::init(Token, INVALID);
-	tok.id = 1;
+	tok.tok_id = 1;
 
 	if (args.len > 1) switch (args[1])
 	{

@@ -50,6 +50,17 @@ macro bool String[].@contains_any($self, String[] $other) @const
 	return false;
 }
 
+macro bool String[].@has_mismatch($self, String[] $other) @const
+{
+	$foreach $s : $other:
+		$if !$self.@contains($s):
+			return true;
+		$endif
+	$endforeach
+	return false;
+}
+
+
 macro String String[].@first_match($self, String[] $other) @const
 {
 	bool $found;
@@ -131,6 +142,7 @@ macro @id($Type, #tag) @const => @tag_id($Type, #tag);
 <*
  @require validate_tagged_union($typeof(#var))
  @require @validate_tagged_union_tag($typeof(#var), #tag)
+ @require @has_union_member($typeof(#var), #tag) : "tried to get the value of a tag without value"
  @require #var.$eval(get_tag($typeof(#var)).nameof) == @tag_id($typeof(#var), #tag) : "tried to get the value of the incorrect tag"
 *>
 macro get(#var, #tag) @safemacro => @union_member($typeof(#var), #tag).get(get_union($typeof(#var)).get(#var));
@@ -148,7 +160,7 @@ macro bool validate_tagged_union($Type) @private @const
 	$foreach $member : get_union($Type).membersof:
 		String[] $member_names = member_names($member);
 		$if has_enum_tag($Type):
-			$if !$TagType.names.@contains_any($member_names):
+			$if $TagType.names.@has_mismatch($member_names):
 				$error @sprintf(`at "%s %s": Invalid tag name "%s" for enum-based tagged union. valid names are "%s".`"\n"`consider using "@TagIs({"NAME"})" to change it to a valid name`, $member.typeid.nameof, $member.nameof, $TagType.names.@first_mismatch($member_names), $TagType.names);
 			$endif
 		$endif
@@ -198,9 +210,13 @@ macro @tag_id($Type, #tag) @private @const
 macro String[] all_tag_names($Type) @private @const
 {
 	String[] $names;
-	$foreach $member : get_union($Type).membersof:
-		$names = $names +++ member_names($member);
-	$endforeach
+	$if has_enum_tag($Type):
+		$names = $typefrom(get_tag($Type).typeid).names;
+	$else
+		$foreach $member : get_union($Type).membersof:
+			$names = $names +++ member_names($member);
+		$endforeach
+	$endif
 	return $names;
 }
 
