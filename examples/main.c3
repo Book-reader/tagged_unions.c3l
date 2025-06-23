@@ -26,11 +26,17 @@ struct Token @TaggedUnion
 {
 	__Token val @Union;
 	TokenType type @Tag;
+	usz tok_id; // other values are allowed
 }
+
+// You can define convenience methods if needed
+// macro Token.get(#self, #tag) @safemacro => tu::get(#self, #tag);
+// macro Token.set(#self, #tag, #val = EMPTY_MACRO_SLOT) @safemacro => tu::set(#self, #tag, #val);
 
 fn int main(String[] args)
 {
 	Token tok = tu::init(Token, INVALID);
+	tok.id = 1;
 
 	if (args.len > 1) switch (args[1])
 	{
@@ -58,7 +64,7 @@ fn int main(String[] args)
 
 	switch (tu::tag(tok))
 	{
-		case tu::@id(Token, INVALID): // for enum tags the enum or @id can be used, for integer types @id *must* be used
+		case tu::@id(Token, INVALID): // for enum tags the enum or @id can be used, for integer tags @id *must* be used
 		case LPAREN:
 		case RPAREN:
 		case PLUS:
