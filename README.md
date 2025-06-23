@@ -1,5 +1,10 @@
 # a simple and mostly safe tagged unions library for C3
 
+> [!WARNING]
+> This *requires* a C3 version after [aff3a3f](https://github.com/c3lang/c3c/commit/aff3a3f7464b3297930e6e61ce9ff40fe91751c3)
+>
+> Older versions may work but will be unable to use the `@TagIs` feature
+
 ## api:
 ```cpp
 // returns a new tagged union of type $Type with a tag of #tag and a value of #val. #tag must be the name of the union member converted to uppercase or a name specified by `@TagIs`.
@@ -18,7 +23,7 @@ to create a tagged union, create a struct annotated with `@TaggedUnion`, then pl
 
 getting and setting the the tagged union use `tu::get(union, TAG)` and `tu::set(union, TAG, val)`, where the second parameter is the name of the union value in uppercase
 
-`@TagIs({"NAME1", "NAME2"})` can be added to any union member to change tag used to refer to it or allow multiple tags to refer to it
+`@TagIs({"NAME1", "NAME2", ...})` can be added to any union member to change tag used to refer to it or allow multiple tags to refer to it
 
 ## example usage:
 ```cpp
