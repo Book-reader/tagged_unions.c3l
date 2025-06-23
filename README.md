@@ -40,13 +40,14 @@ enum TokenType : char
 	MINUS,
 	NUMBER,
 	IDENT,
+	STRING,
 }
 
-// Should be possible to inline in the struct soon
+// Should be possible to inline in the struct soon once the compiler bug is fixed
 union __Token
 {
 	double number;
-	String id @TagIs({"IDENT"});
+	String id @TagIs({"IDENT", "STRING"});
 }
 
 struct Token @TaggedUnion
@@ -72,7 +73,14 @@ fn int main(String[] args)
 			}
 			else
 			{
-				tu::set(tok, IDENT, args[1]);
+				if (args[1][0] == '"' && args[1][^1] == '"')
+				{
+					tu::set(tok, STRING, args[1][1..^2]);
+				}
+				else
+				{
+					tu::set(tok, IDENT, args[1]);
+				}
 			}
 	}
 
@@ -88,6 +96,8 @@ fn int main(String[] args)
 			io::printfn("got number '%s'", tu::get(tok, NUMBER));
 		case IDENT:
 			io::printfn("got ident '%s'", tu::get(tok, IDENT));
+		case STRING:
+			io::printfn("got string '%s'", tu::get(tok, STRING));
 	}
 	return 0;
 }
