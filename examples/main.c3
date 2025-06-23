@@ -15,16 +15,13 @@ enum TokenType : char
 	STRING,
 }
 
-// Should be possible to inline in the struct soon
-union __Token
-{
-	double number;
-	String id @TagIs({"IDENT", "STRING"});
-}
-
 struct Token @TaggedUnion
 {
-	__Token val @Union;
+	union val @Union
+	{
+		double number;
+		String id @TagIs({"IDENT", "STRING"});
+	}
 	TokenType type @Tag;
 	usz tok_id; // other values are allowed
 }

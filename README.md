@@ -1,7 +1,7 @@
 # a simple and mostly safe tagged unions library for C3
 
 > [!WARNING]
-> This *requires* a C3 version after [aff3a3f](https://github.com/c3lang/c3c/commit/aff3a3f7464b3297930e6e61ce9ff40fe91751c3)
+> This *requires* a C3 version after [aff3a3f](https://github.com/c3lang/c3c/commit/aff3a3f7464b3297930e6e61ce9ff40fe91751c3), and versions after [affb722](https://github.com/c3lang/c3c/commit/affb722b23deb1401ffd5153368ebaad791e8533) to inline the definition of the union
 >
 > Older versions may work but will be unable to use the `@TagIs` feature
 
@@ -43,16 +43,13 @@ enum TokenType : char
 	STRING,
 }
 
-// Should be possible to inline in the struct definition soon
-union __Token
-{
-	double number;
-	String id @TagIs({"IDENT", "STRING"});
-}
-
 struct Token @TaggedUnion
 {
-	__Token val @Union;
+	union val @Union
+	{
+		double number;
+		String id @TagIs({"IDENT", "STRING"});
+	}
 	TokenType type @Tag;
 	usz tok_id; // other values are allowed
 }
